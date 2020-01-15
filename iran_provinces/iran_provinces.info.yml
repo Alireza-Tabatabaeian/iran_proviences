@@ -1,0 +1,9 @@
+name: Iran Provinces and counties
+description: This module provides a taxonomy which holds iran Provinces and their counties as their childrens so it can be used in forms.
+package: Drupersia
+
+type: module
+core: 8.x
+
+dependencies:
+  - drupal:taxonomy

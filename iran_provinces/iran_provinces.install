@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function iran_provinces_install() {
+  // Populate the default {node_access} record.
+  /*
+   *db_insert('node_access')
+   *  ->fields(array(
+   *    'nid' => 0,
+   *    'gid' => 0,
+   *    'realm' => 'all',
+   *    'grant_view' => 1,
+   *    'grant_update' => 0,
+   *    'grant_delete' => 0,
+   *  ))
+   *  ->execute();
+   */
+  $vid = "iran_provinces";
+  $name = "Iran Proviencies and counties";
+  $vocabularies = \Drupal\taxonomy\Entity\Vocabulary::loadMultiple();
+  if (!isset($vocabularies[$vid])) {
+    $vocabulary = \Drupal\taxonomy\Entity\Vocabulary::create(array(
+      'vid' => $vid,
+      'description' => 'Update 1397, feel free to add new counties to each province if needed',
+      'name' => $name,
+    ));
+    $vocabulary->save();
+  }
+
+  $myfile = fopen(drupal_get_path('module', 'iran_provinces') . "/iran_provinces.json", "r") or die("Unable to open file!");
+  $data = fread($myfile,filesize(drupal_get_path('module', 'iran_provinces') . "/iran_provinces.json"));
+  fclose($myfile);
+
+  $list = json_decode($data, TRUE);
+
+  foreach ($list as $province => $cities) {
+    $pro = \Drupal\taxonomy\Entity\Term::create([
+      'name' => $province,
+      'vid' => $vid,
+    ]);
+    $pro->save();
+    foreach ($cities as $city) {
+      \Drupal\taxonomy\Entity\Term::create([
+        'name' => $city,
+        'vid' => $vid,
+        'parent' => array($pro->id()),
+      ])->save();
+    }
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function iran_provinces_uninstall() {
+  /*
+   *variable_del('upload_file_types');
+   */
+  $vid = "iran_provinces";
+  $vocabularies = \Drupal\taxonomy\Entity\Vocabulary::loadMultiple();
+  if (isset($vocabularies[$vid])) {
+    $vocabularies[$vid]->delete();
+  }
+}
